@@ -10,7 +10,7 @@ const seo = {
   title: "Seny's Portefolio",
   description:
     // "A passionate individual who always thrives to work on end to end products which develop sustainable and scalable social and technical systems to create impact.",
-      "Jeune diplômé en Data Engineering et Data Science, passionné par l'IA et les solutions data-driven. Rigoureux et curieux, je maîtrise Python, SQL, Machine Learning et la visualisation. Je recherche un stage ou CDD pour transformer les données en insights stratégiques et contribuer à des projets innovants.",
+      "Data Scientist et Développeur IA diplômé d’un Master en Modélisation, j’allie rigueur scientifique et expertise technique pour transformer la donnée en levier de croissance. Fort de mes expériences chez SycaPay et Orange Sonatel, j’ai conçu des systèmes de scoring de risque ainsi que des applications d’analyse de sentiment basées sur l’IA. Je maîtrise l’écosystème data incluant Python, SQL et Spark..., ainsi que les modèles génératifs et les architectures RAG.",
   og: {
     title: "Seny Toutou Diedhiou Portfolio",
     type: "website",
@@ -25,9 +25,9 @@ const greeting = {
   nickname: "setoudie",
   subTitle:
     // "Someone who loves working on projects that create real impact, building solutions that are sustainable and scalable, both socially and technically, from start to finish.",
-      "Diplômé en Data Engineering et Data Science, je suis passionné par la transformation des données en solutions stratégiques. Curieux et rigoureux, je cherche à explorer des projets innovants qui apportent une réelle valeur ajoutée et façonnent l’avenir.",
+      "Data Scientist et Développeur IA diplômé d’un Master en Modélisation, j’allie rigueur scientifique et expertise technique pour transformer la donnée en levier de croissance. Fort de mes expériences chez SycaPay et Orange Sonatel, j’ai conçu des systèmes de scoring de risque ainsi que des applications d’analyse de sentiment basées sur l’IA. Je maîtrise l’écosystème data incluant Python, SQL et Spark..., ainsi que les modèles génératifs et les architectures RAG.",
   resumeLink:
-    "https://drive.google.com/file/d/1O8ssYhHZfa_9Dw8X4P9CfdomDNFrB3do/view?usp=sharing",
+    "https://drive.google.com/file/d/1Bivd2TbkODdUf3Da0mXBldR8Uj2klCHb/view?usp=sharing",
   portfolio_repository: "https://github.com/setoudie/Portolio",
   githubProfile: "https://github.com/setoudie",
 };
