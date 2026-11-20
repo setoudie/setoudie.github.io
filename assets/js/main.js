@@ -124,14 +124,72 @@
     else delete status.dataset.state;
   };
 
+  /* Deux étapes : choisir le canal, puis écrire */
+  const stepChoose = dialog.querySelector('[data-step="choose"]');
+  const stepWrite = dialog.querySelector('[data-step="write"]');
+  const dialogTitle = document.getElementById("dialog-title");
+  const dialogSub = document.getElementById("dialog-sub");
+  const emailField = document.getElementById("cf-email-field");
+  const submitLabel = document.getElementById("cf-submit-label");
+  const submitIcon = document.getElementById("cf-submit-icon");
+  let channel = null;
+
+  const CHANNELS = {
+    mail: {
+      title: "Message par e-mail",
+      sub: "Il arrive directement dans ma boîte. Je vous réponds à l'adresse indiquée.",
+      submit: "Envoyer l'e-mail",
+      icon: "#i-send",
+    },
+    whatsapp: {
+      title: "Message WhatsApp",
+      sub: "WhatsApp s'ouvre avec votre message déjà écrit : appuyez sur Envoyer pour me l'adresser.",
+      submit: "Ouvrir WhatsApp",
+      icon: "#i-whatsapp",
+    },
+  };
+
+  const showChoose = () => {
+    channel = null;
+    stepChoose.hidden = false;
+    stepWrite.hidden = true;
+    dialogTitle.textContent = "Écrivez-moi";
+    dialogSub.textContent = "Par quel moyen voulez-vous me joindre ?";
+    setStatus("");
+  };
+
+  const showWrite = (ch) => {
+    channel = ch;
+    const c = CHANNELS[ch];
+    stepChoose.hidden = true;
+    stepWrite.hidden = false;
+    dialogTitle.textContent = c.title;
+    dialogSub.textContent = c.sub;
+    submitLabel.textContent = c.submit;
+    submitIcon.setAttribute("href", c.icon);
+    // L'e-mail du visiteur n'est utile que pour la réponse par e-mail
+    emailField.hidden = ch !== "mail";
+    form.elements.email.required = ch === "mail";
+    setStatus("");
+    form.elements.name.focus();
+  };
+
+  dialog.querySelectorAll("[data-channel]").forEach((b) =>
+    b.addEventListener("click", () => showWrite(b.dataset.channel))
+  );
+  document.getElementById("cf-back").addEventListener("click", () => {
+    showChoose();
+    dialog.querySelector("[data-channel]").focus();
+  });
+
   document.querySelectorAll("[data-open-contact]").forEach((el) => {
     el.addEventListener("click", (e) => {
       if (!supportsDialog) return; // vieux navigateur : on garde le lien vers la section contact
       e.preventDefault();
       closeMenu();
-      setStatus("");
+      showChoose();
       dialog.showModal();
-      document.getElementById("cf-name").focus();
+      dialog.querySelector("[data-channel]").focus();
     });
   });
 
@@ -156,17 +214,21 @@
       (name ? form.elements.message : form.elements.name).focus();
       return;
     }
+
+    // WhatsApp : ouvert dans le clic (sinon le navigateur bloque la fenêtre)
+    if (channel === "whatsapp") {
+      const waText = `Bonjour Seny, je suis ${name}.\n\n${message}`;
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(waText)}`, "_blank", "noopener");
+      setStatus("WhatsApp s'est ouvert avec votre message : appuyez sur Envoyer pour me l'adresser.", "ok");
+      return;
+    }
+
+    // E-mail : envoyé directement
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setStatus("Indiquez une adresse e-mail valide pour que je puisse vous répondre.", "error");
       form.elements.email.focus();
       return;
     }
-
-    // 1. WhatsApp : ouvert tout de suite (dans le clic, sinon le navigateur bloque la fenêtre)
-    const waText = `Bonjour Seny, je suis ${name} (${email}).\n\n${message}`;
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(waText)}`, "_blank", "noopener");
-
-    // 2. E-mail : envoyé directement
     submitBtn.disabled = true;
     setStatus("Envoi de l'e-mail…");
     try {
@@ -187,10 +249,10 @@
       if (!res.ok || String(data.success) !== "true") throw new Error(data.message || res.status);
 
       form.reset();
-      setStatus("E-mail envoyé. Pensez à appuyer sur Envoyer dans WhatsApp. Je vous réponds vite.", "ok");
+      setStatus("E-mail envoyé. Je vous réponds vite.", "ok");
     } catch (err) {
       setStatus(
-        `L'e-mail n'est pas parti. Écrivez-moi directement à ${CONTACT_EMAIL}, votre message WhatsApp reste valable.`,
+        `L'e-mail n'est pas parti. Réessayez, ou écrivez-moi directement à ${CONTACT_EMAIL}.`,
         "error"
       );
     } finally {

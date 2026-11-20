@@ -587,34 +587,53 @@
         <div class="dialog__head">
           <div>
             <h2 class="dialog__title" id="dialog-title">Écrivez-moi</h2>
-            <p class="dialog__sub">
-              Le message m'arrive directement par e-mail, et WhatsApp s'ouvre avec le même texte : il
-              suffit d'y appuyer sur Envoyer.
-            </p>
+            <p class="dialog__sub" id="dialog-sub">Par quel moyen voulez-vous me joindre ?</p>
           </div>
           <button class="icon-btn dialog__close" type="button" data-close aria-label="Fermer la fenêtre">×</button>
         </div>
 
-        <div class="field">
-          <label for="cf-name">Votre nom</label>
-          <input id="cf-name" name="name" type="text" autocomplete="name" required maxlength="120" />
-        </div>
-        <div class="field">
-          <label for="cf-email">Votre e-mail</label>
-          <input id="cf-email" name="email" type="email" autocomplete="email" required maxlength="200" />
-        </div>
-        <div class="field">
-          <label for="cf-message">Votre message</label>
-          <textarea id="cf-message" name="message" required maxlength="4000"></textarea>
-        </div>
-        <div class="field__hp" aria-hidden="true">
-          <label for="cf-honey">Ne pas remplir</label>
-          <input id="cf-honey" name="_honey" type="text" tabindex="-1" autocomplete="off" />
+        <!-- Étape 1 : choix du canal -->
+        <div class="dialog__step" data-step="choose">
+          <div class="choices">
+            <button class="choice" type="button" data-channel="mail">
+              <svg class="icon choice__icon" aria-hidden="true"><use href="#i-mail"/></svg>
+              <span class="choice__label">Par e-mail</span>
+              <span class="choice__desc">Votre message arrive directement dans ma boîte mail.</span>
+            </button>
+            <button class="choice" type="button" data-channel="whatsapp">
+              <svg class="icon choice__icon" aria-hidden="true"><use href="#i-whatsapp"/></svg>
+              <span class="choice__label">Par WhatsApp</span>
+              <span class="choice__desc">Votre message s'ouvre dans WhatsApp, prêt à m'être envoyé.</span>
+            </button>
+          </div>
         </div>
 
-        <div class="dialog__actions">
-          <button class="btn btn--primary" type="submit" id="cf-submit"><svg class="icon" aria-hidden="true"><use href="#i-send"/></svg>Envoyer</button>
-          <button class="btn btn--ghost" type="button" data-close>Annuler</button>
+        <!-- Étape 2 : le message -->
+        <div class="dialog__step" data-step="write" hidden>
+          <div class="field">
+            <label for="cf-name">Votre nom</label>
+            <input id="cf-name" name="name" type="text" autocomplete="name" required maxlength="120" />
+          </div>
+          <div class="field" id="cf-email-field">
+            <label for="cf-email">Votre e-mail</label>
+            <input id="cf-email" name="email" type="email" autocomplete="email" required maxlength="200" />
+          </div>
+          <div class="field">
+            <label for="cf-message">Votre message</label>
+            <textarea id="cf-message" name="message" required maxlength="4000"></textarea>
+          </div>
+          <div class="field__hp" aria-hidden="true">
+            <label for="cf-honey">Ne pas remplir</label>
+            <input id="cf-honey" name="_honey" type="text" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="dialog__actions">
+            <button class="btn btn--primary" type="submit" id="cf-submit">
+              <svg class="icon" aria-hidden="true"><use href="#i-send" id="cf-submit-icon"/></svg>
+              <span id="cf-submit-label">Envoyer</span>
+            </button>
+            <button class="btn btn--ghost" type="button" id="cf-back">Changer de moyen</button>
+          </div>
         </div>
         <p class="dialog__status" id="cf-status" role="status" aria-live="polite"></p>
       </form>

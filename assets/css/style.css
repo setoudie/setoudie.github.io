@@ -62,6 +62,11 @@
   --wrap: 1180px;
   --gutter: clamp(1rem, 4vw, 2.5rem);
   --nav-h: 64px;
+
+  /* Arrondis modérés : ni pilule, ni carré */
+  --r-sm: 4px; /* étiquettes */
+  --r: 7px; /* boutons, champs */
+  --r-lg: 12px; /* cartes, panneaux */
 }
 
 /* ---------- Base ---------- */
@@ -87,6 +92,10 @@ body {
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 img {
@@ -119,6 +128,7 @@ ol {
 :focus-visible {
   outline: 2px solid var(--c2);
   outline-offset: 3px;
+  border-radius: var(--r-sm);
 }
 
 ::selection {
@@ -155,6 +165,7 @@ ol {
   padding: 0.6rem 1rem;
   background: var(--text);
   color: var(--bg);
+  border-radius: var(--r);
   font-weight: 600;
   text-decoration: none;
 }
@@ -180,6 +191,7 @@ ol {
   min-height: 48px;
   padding: 0.75rem 1.35rem;
   border: 1px solid transparent;
+  border-radius: var(--r);
   font: 600 0.98rem/1 var(--f-body);
   text-decoration: none;
   cursor: pointer;
@@ -219,6 +231,7 @@ ol {
   height: 44px;
   padding: 0;
   border: 1px solid var(--line);
+  border-radius: var(--r);
   background: transparent;
   color: var(--text);
   font-size: 1rem;
@@ -333,6 +346,7 @@ ol {
   padding: 0 0.9rem;
   color: var(--text);
   border: 1px solid var(--line-strong);
+  border-radius: var(--r);
 }
 
 .nav__links .nav__cv:hover {
@@ -350,6 +364,7 @@ ol {
   min-height: 44px;
   padding: 0 1rem;
   border: 1px solid var(--line-strong);
+  border-radius: var(--r);
   background: transparent;
   color: var(--text);
   font: 500 0.9rem var(--f-body);
@@ -505,6 +520,7 @@ ol {
   width: 44px;
   height: 44px;
   border: 1px solid var(--line);
+  border-radius: var(--r);
   color: var(--muted);
   font-size: 1.15rem;
   transition: color 0.2s ease, border-color 0.2s ease;
@@ -526,6 +542,7 @@ ol {
   align-self: end;
   padding: 1.1rem 1.2rem 1rem;
   border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
   background: color-mix(in srgb, var(--bg) 90%, transparent);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -620,6 +637,7 @@ ol {
   min-height: 36px;
   padding: 0 0.9rem;
   border: 1px solid var(--line-strong);
+  border-radius: var(--r);
   background: transparent;
   color: var(--text);
   font: 600 0.78rem var(--f-body);
@@ -835,6 +853,7 @@ ol {
   margin-top: 0.5rem;
   padding: 0.1rem 0.5rem;
   border: 1px solid var(--accent);
+  border-radius: var(--r-sm);
   color: var(--accent);
   font-size: 0.66rem;
 }
@@ -891,6 +910,7 @@ ol {
   font-size: 0.68rem;
   padding: 0.25rem 0.55rem;
   border: 1px solid var(--line);
+  border-radius: var(--r-sm);
   color: var(--muted);
 }
 
@@ -919,21 +939,20 @@ ol {
 .projects {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  border-top: 1px solid var(--line);
-  border-left: 1px solid var(--line);
+  gap: 1rem;
 }
 
 .project {
   display: flex;
   flex-direction: column;
   padding: clamp(1.4rem, 3vw, 2rem);
-  border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  transition: background-color 0.25s ease;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  transition: border-color 0.25s ease;
 }
 
 .project:hover {
-  background: color-mix(in srgb, var(--text) 3%, transparent);
+  border-color: var(--line-strong);
 }
 
 .project--wide {
@@ -1094,6 +1113,7 @@ ol {
 .chips li {
   padding: 0.3rem 0.65rem;
   border: 1px solid var(--line);
+  border-radius: var(--r-sm);
   font-size: 0.88rem;
   line-height: 1.3;
 }
@@ -1156,13 +1176,7 @@ ol {
 .certs__list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-top: 1px solid var(--line);
-  border-left: 1px solid var(--line);
-}
-
-.certs__list li {
-  border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  gap: 0.75rem;
 }
 
 .cert {
@@ -1171,12 +1185,14 @@ ol {
   gap: 0.4rem;
   height: 100%;
   padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
   text-decoration: none;
-  transition: background-color 0.2s ease;
+  transition: border-color 0.2s ease;
 }
 
 .cert:hover {
-  background: color-mix(in srgb, var(--text) 3%, transparent);
+  border-color: var(--c4);
 }
 
 .cert__name {
@@ -1264,6 +1280,7 @@ ol {
   max-height: calc(100svh - 2rem);
   padding: 0;
   border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
   background: var(--bg);
   color: var(--text);
 }
@@ -1306,6 +1323,58 @@ ol {
   line-height: 1;
 }
 
+.choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.choice {
+  display: grid;
+  justify-items: start;
+  gap: 0.35rem;
+  padding: 1.1rem 1.1rem 1.2rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.choice:hover {
+  border-color: var(--text);
+}
+
+.choice__icon {
+  font-size: 1.6rem;
+  margin-bottom: 0.5rem;
+  color: var(--c1);
+}
+
+.choice[data-channel="whatsapp"] .choice__icon {
+  color: var(--c2);
+}
+
+.choice__label {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.choice__desc {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+@media (max-width: 520px) {
+  .choices {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .field {
   display: grid;
   gap: 0.4rem;
@@ -1326,7 +1395,7 @@ ol {
   background: transparent;
   color: var(--text);
   font: 400 1rem/1.5 var(--f-body);
-  border-radius: 0;
+  border-radius: var(--r);
 }
 
 .field textarea {
@@ -1404,6 +1473,7 @@ ol {
   z-index: 60;
   transform: translate(-50%, 20px);
   padding: 0.7rem 1.1rem;
+  border-radius: var(--r);
   background: var(--text);
   color: var(--bg);
   font-weight: 600;
