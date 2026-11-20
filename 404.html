@@ -1,50 +1,73 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <title>Single Page Apps for GitHub Pages</title>
-    <script type="text/javascript">
-      // Single Page Apps for GitHub Pages
-      // MIT License
-      // https://github.com/rafgraph/spa-github-pages
-      // This script takes the current url and converts the path and query
-      // string into just a query string, and then redirects the browser
-      // to the new url with only a query string and hash fragment,
-      // e.g. https://www.foo.tld/one/two?a=b&c=d#qwe, becomes
-      // https://www.foo.tld/?/one/two&a=b~and~c=d#qwe
-      // Note: this 404.html file must be at least 512 bytes for it to work
-      // with Internet Explorer (it is currently > 512 bytes)
-
-      // If you're creating a Project Pages site and NOT using a custom domain,
-      // then set pathSegmentsToKeep to 1 (enterprise users may need to set it to > 1).
-      // This way the code will only replace the route part of the path, and not
-      // the real directory in which the app resides, for example:
-      // https://username.github.io/repo-name/one/two?a=b&c=d#qwe becomes
-      // https://username.github.io/repo-name/?/one/two&a=b~and~c=d#qwe
-      // Otherwise, leave pathSegmentsToKeep as 0.
-      var pathSegmentsToKeep = 0;
-
-      var l = window.location;
-      l.replace(
-        l.protocol +
-          "//" +
-          l.hostname +
-          (l.port ? ":" + l.port : "") +
-          l.pathname
-            .split("/")
-            .slice(0, 1 + pathSegmentsToKeep)
-            .join("/") +
-          "/?/" +
-          l.pathname
-            .slice(1)
-            .split("/")
-            .slice(pathSegmentsToKeep)
-            .join("/")
-            .replace(/&/g, "~and~") +
-          (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
-          l.hash
-      );
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Page introuvable · Seny Toutou Diedhiou</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Onest:wght@400;600&family=Unbounded:wght@600&display=swap"
+    />
+    <link rel="stylesheet" href="/assets/css/style.css" />
+    <style>
+      .lost {
+        min-height: 100vh;
+        min-height: 100svh;
+        display: grid;
+        place-items: center;
+        padding: 2rem var(--gutter);
+        background-image: linear-gradient(var(--line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--line) 1px, transparent 1px);
+        background-size: 96px 96px;
+        background-position: -1px -1px;
+      }
+      .lost__card {
+        max-width: 34rem;
+        padding: clamp(1.5rem, 5vw, 2.5rem);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(20, 17, 31, 0.92);
+      }
+      .lost__point {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 1.5px solid var(--muted);
+        margin-bottom: 1.5rem;
+        box-shadow: 0 0 0 22px rgba(167, 160, 194, 0.06);
+      }
+      .lost h1 {
+        font-family: var(--f-display);
+        font-weight: 600;
+        font-size: clamp(1.8rem, 1.2rem + 3vw, 2.8rem);
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+      }
+      .lost p {
+        margin-top: 1rem;
+        color: var(--muted);
+      }
+      .lost .btn {
+        margin-top: 2rem;
+      }
+    </style>
   </head>
-  <body></body>
+  <body>
+    <main class="lost">
+      <div class="lost__card">
+        <div class="lost__point" aria-hidden="true"></div>
+        <p class="eyebrow">Erreur 404 · label = -1</p>
+        <h1>Cette page est un point isolé.</h1>
+        <p>
+          DBSCAN l'aurait classée comme bruit : aucune page n'existe à cette adresse. Le reste du
+          portfolio est regroupé sur la page d'accueil.
+        </p>
+        <a class="btn btn--primary" href="/">Revenir à l'accueil</a>
+      </div>
+    </main>
+  </body>
 </html>
