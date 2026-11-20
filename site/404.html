@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Page introuvable · Seny Toutou Diedhiou</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Onest:wght@400;600&family=Unbounded:wght@600&display=swap"
+    />
+    <link rel="stylesheet" href="/assets/css/style.css" />
+    <style>
+      .lost {
+        min-height: 100vh;
+        min-height: 100svh;
+        display: grid;
+        place-items: center;
+        padding: 2rem var(--gutter);
+        background-image: linear-gradient(var(--line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--line) 1px, transparent 1px);
+        background-size: 96px 96px;
+        background-position: -1px -1px;
+      }
+      .lost__card {
+        max-width: 34rem;
+        padding: clamp(1.5rem, 5vw, 2.5rem);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(20, 17, 31, 0.92);
+      }
+      .lost__point {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 1.5px solid var(--muted);
+        margin-bottom: 1.5rem;
+        box-shadow: 0 0 0 22px rgba(167, 160, 194, 0.06);
+      }
+      .lost h1 {
+        font-family: var(--f-display);
+        font-weight: 600;
+        font-size: clamp(1.8rem, 1.2rem + 3vw, 2.8rem);
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+      }
+      .lost p {
+        margin-top: 1rem;
+        color: var(--muted);
+      }
+      .lost .btn {
+        margin-top: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="lost">
+      <div class="lost__card">
+        <div class="lost__point" aria-hidden="true"></div>
+        <p class="eyebrow">Erreur 404 · label = -1</p>
+        <h1>Cette page est un point isolé.</h1>
+        <p>
+          DBSCAN l'aurait classée comme bruit : aucune page n'existe à cette adresse. Le reste du
+          portfolio est regroupé sur la page d'accueil.
+        </p>
+        <a class="btn btn--primary" href="/">Revenir à l'accueil</a>
+      </div>
+    </main>
+  </body>
+</html>
