@@ -21,10 +21,16 @@
   const resetBtn = document.getElementById("reset");
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const rootStyle = getComputedStyle(document.documentElement);
-  const cssVar = (name) => rootStyle.getPropertyValue(name).trim();
-  const PALETTE = ["--c1", "--c2", "--c3", "--c4", "--c5", "--c6", "--c7"].map(cssVar);
-  const C = { text: cssVar("--text"), faint: cssVar("--faint"), line: cssVar("--line"), muted: cssVar("--muted") };
+  // Couleurs lues dans les variables CSS : relues à chaque changement de thème
+  let PALETTE = [];
+  let C = {};
+  function readColors() {
+    const st = getComputedStyle(document.documentElement);
+    const v = (name) => st.getPropertyValue(name).trim();
+    PALETTE = ["--c1", "--c2", "--c3", "--c4", "--c5", "--c6", "--c7"].map(v);
+    C = { text: v("--text"), faint: v("--faint"), line: v("--line"), muted: v("--muted") };
+  }
+  readColors();
 
   const MIN_SAMPLES = 4;
   const MAX_POINTS = 1100;
@@ -531,6 +537,14 @@
     compute();
     schedule(!reduceMotion);
     t0 = performance.now();
+    requestRender();
+  });
+
+  window.addEventListener("themechange", () => {
+    readColors();
+    if (!W) return; // carte pas encore dessinée
+    drawGrid();
+    compute();
     requestRender();
   });
 

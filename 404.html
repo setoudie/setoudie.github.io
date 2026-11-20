@@ -13,6 +13,15 @@
       href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Onest:wght@400;600&family=Unbounded:wght@600&display=swap"
     />
     <link rel="stylesheet" href="/assets/css/style.css" />
+    <script>
+      (function () {
+        var theme = "dark";
+        try {
+          theme = localStorage.getItem("theme") === "light" ? "light" : "dark";
+        } catch (e) {}
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
     <style>
       .lost {
         min-height: 100vh;
@@ -28,9 +37,8 @@
       .lost__card {
         max-width: 34rem;
         padding: clamp(1.5rem, 5vw, 2.5rem);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        background: rgba(20, 17, 31, 0.92);
+        border: 1px solid var(--line-strong);
+        background: var(--bg);
       }
       .lost__point {
         width: 14px;
@@ -38,7 +46,6 @@
         border-radius: 50%;
         border: 1.5px solid var(--muted);
         margin-bottom: 1.5rem;
-        box-shadow: 0 0 0 22px rgba(167, 160, 194, 0.06);
       }
       .lost h1 {
         font-family: var(--f-display);

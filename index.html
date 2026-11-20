@@ -9,7 +9,7 @@
       content="Data & AI Developer à Dakar. Scoring de churn, classification géospatiale des points de vente, analyse de sentiment et reporting automatisé."
     />
     <meta name="author" content="Seny Toutou Diedhiou" />
-    <meta name="theme-color" content="#14111f" />
+    <meta name="theme-color" content="#14111f" id="theme-color" />
     <link rel="canonical" href="https://setoudie.github.io/" />
 
     <meta property="og:type" content="website" />
@@ -31,10 +31,35 @@
     />
     <link rel="stylesheet" href="assets/css/style.css" />
     <script>
-      document.documentElement.classList.add("js");
+      // Thème : sombre par défaut, clair si le visiteur l'a choisi
+      (function () {
+        var theme = "dark";
+        try {
+          theme = localStorage.getItem("theme") === "light" ? "light" : "dark";
+        } catch (e) {}
+        document.documentElement.setAttribute("data-theme", theme);
+        document.documentElement.classList.add("js");
+      })();
     </script>
   </head>
   <body>
+    <svg class="sprite" aria-hidden="true" focusable="false">
+      <!-- Icônes : Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0) Copyright 2024 Fonticons, Inc. -->
+      <symbol id="i-linkedin" viewBox="0 0 448 512"><path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z"/></symbol>
+      <symbol id="i-github" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></symbol>
+      <symbol id="i-instagram" viewBox="0 0 448 512"><path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/></symbol>
+      <symbol id="i-x" viewBox="0 0 512 512"><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/></symbol>
+      <symbol id="i-mail" viewBox="0 0 512 512"><path d="M48 64C21.5 64 0 85.5 0 112c0 15.1 7.1 29.3 19.2 38.4L236.8 313.6c11.4 8.5 27 8.5 38.4 0L492.8 150.4c12.1-9.1 19.2-23.3 19.2-38.4c0-26.5-21.5-48-48-48H48zM0 176V384c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V176L294.4 339.2c-22.8 17.1-54 17.1-76.8 0L0 176z"/></symbol>
+      <symbol id="i-phone" viewBox="0 0 512 512"><path d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64C0 311.4 200.6 512 448 512c18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z"/></symbol>
+      <symbol id="i-download" viewBox="0 0 512 512"><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"/></symbol>
+      <symbol id="i-external" viewBox="0 0 512 512"><path d="M320 0c-17.7 0-32 14.3-32 32s14.3 32 32 32h82.7L201.4 265.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L448 109.3V192c0 17.7 14.3 32 32 32s32-14.3 32-32V32c0-17.7-14.3-32-32-32H320zM80 32C35.8 32 0 67.8 0 112V432c0 44.2 35.8 80 80 80H400c44.2 0 80-35.8 80-80V320c0-17.7-14.3-32-32-32s-32 14.3-32 32V432c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16V112c0-8.8 7.2-16 16-16H192c17.7 0 32-14.3 32-32s-14.3-32-32-32H80z"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 448 512"><path d="M208 0H332.1c12.7 0 24.9 5.1 33.9 14.1l67.9 67.9c9 9 14.1 21.2 14.1 33.9V336c0 26.5-21.5 48-48 48H208c-26.5 0-48-21.5-48-48V48c0-26.5 21.5-48 48-48zM48 128h80v64H64V448H256V416h64v48c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V176c0-26.5 21.5-48 48-48z"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 512 512"><path d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 384 512"><path d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"/></symbol>
+      <symbol id="i-pin" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></symbol>
+      <symbol id="i-whatsapp" viewBox="0 0 448 512"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></symbol>
+      <symbol id="i-send" viewBox="0 0 512 512"><path d="M498.1 5.6c10.1 7 15.4 19.1 13.5 31.2l-64 416c-1.5 9.7-7.4 18.2-16 23s-18.9 5.4-28 1.6L284 427.7l-68.5 74.1c-8.9 9.7-22.9 12.9-35.2 8.1S160 493.2 160 480V396.4c0-4 1.5-7.8 4.2-10.7L331.8 202.8c5.8-6.3 5.6-16-.4-22s-15.7-6.4-22-.7L106 360.8 17.7 316.6C7.1 311.3 .3 300.7 0 288.9s5.9-22.8 16.1-28.7l448-256c10.7-6.1 23.9-5.5 34 1.4z"/></symbol>
+    </svg>
     <a class="skip-link" href="#contenu">Aller au contenu</a>
 
     <header class="nav" id="nav">
@@ -43,17 +68,23 @@
           <span class="nav__dots" aria-hidden="true"><i></i><i></i><i></i></span>
           setoudie
         </a>
-        <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-links">
-          Menu
-        </button>
         <nav class="nav__links" id="nav-links" aria-label="Sections">
           <a href="#parcours">Parcours</a>
           <a href="#projets">Projets</a>
           <a href="#competences">Compétences</a>
           <a href="#formation">Formation</a>
           <a href="#contact">Contact</a>
-          <a class="nav__cv" href="assets/Seny_Toutou_Diedhiou_CV.pdf" download>Télécharger mon CV</a>
+          <a class="nav__cv" href="assets/Seny_Toutou_Diedhiou_CV.pdf" download><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Mon CV</a>
         </nav>
+        <div class="nav__actions">
+          <button class="icon-btn theme-toggle" id="theme-toggle" type="button" aria-label="Passer en mode clair">
+            <svg class="icon icon--sun" aria-hidden="true"><use href="#i-sun"/></svg>
+            <svg class="icon icon--moon" aria-hidden="true"><use href="#i-moon"/></svg>
+          </button>
+          <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-links">
+            Menu
+          </button>
+        </div>
       </div>
     </header>
 
@@ -82,8 +113,15 @@
             </p>
             <div class="hero__actions">
               <a class="btn btn--primary" href="#projets">Voir mes projets</a>
-              <a class="btn btn--ghost" href="#contact">Me contacter</a>
+              <a class="btn btn--ghost" href="#contact" data-open-contact>Me contacter</a>
             </div>
+            <ul class="socials" aria-label="Réseaux">
+              <li><a href="https://www.linkedin.com/in/seny-toutou-diedhiou" target="_blank" rel="noopener" aria-label="LinkedIn"><svg class="icon" aria-hidden="true"><use href="#i-linkedin"/></svg></a></li>
+              <li><a href="https://github.com/setoudie" target="_blank" rel="noopener" aria-label="GitHub"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg></a></li>
+              <li><a href="https://x.com/senytoutou" target="_blank" rel="noopener" aria-label="X"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></a></li>
+              <li><a href="https://www.instagram.com/setoudie/" target="_blank" rel="noopener" aria-label="Instagram"><svg class="icon" aria-hidden="true"><use href="#i-instagram"/></svg></a></li>
+              <li><a href="mailto:diedhiousenytoutou@outlook.com" aria-label="E-mail"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg></a></li>
+            </ul>
           </div>
 
           <div class="hero__map-space" aria-hidden="true"></div>
@@ -106,10 +144,6 @@
               </p>
               <button class="probe__reset" id="reset" type="button">Réinitialiser</button>
             </div>
-            <p class="probe__note">
-              Points simulés. C'est l'algorithme que j'utilise pour regrouper des points de vente à partir
-              de leurs coordonnées GPS.
-            </p>
           </div>
         </div>
       </section>
@@ -139,7 +173,7 @@
               </div>
               <div>
                 <dt>Basé à</dt>
-                <dd>Dakar, Sénégal</dd>
+                <dd class="facts__pin"><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>Dakar, Sénégal</dd>
               </div>
               <div>
                 <dt>Langues</dt>
@@ -311,8 +345,8 @@
               </p>
               <p class="project__stack">React · Flask · Python</p>
               <div class="project__links">
-                <a href="https://asr-app-phi.vercel.app" target="_blank" rel="noopener">Ouvrir la démo ↗</a>
-                <a href="https://github.com/setoudie/AsrRepo" target="_blank" rel="noopener">Voir le code ↗</a>
+                <a href="https://asr-app-phi.vercel.app" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg>Ouvrir la démo</a>
+                <a href="https://github.com/setoudie/AsrRepo" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>Voir le code</a>
               </div>
             </article>
 
@@ -325,8 +359,8 @@
               </p>
               <p class="project__stack">Python · Streamlit</p>
               <div class="project__links">
-                <a href="https://us-airlines-sentiments.streamlit.app/" target="_blank" rel="noopener">Ouvrir la démo ↗</a>
-                <a href="https://github.com/setoudie/US_Airlines_Sentiments" target="_blank" rel="noopener">Voir le code ↗</a>
+                <a href="https://us-airlines-sentiments.streamlit.app/" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg>Ouvrir la démo</a>
+                <a href="https://github.com/setoudie/US_Airlines_Sentiments" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>Voir le code</a>
               </div>
             </article>
 
@@ -339,8 +373,8 @@
               </p>
               <p class="project__stack">Flask · React</p>
               <div class="project__links">
-                <a href="https://prompt-project-navy.vercel.app/" target="_blank" rel="noopener">Ouvrir la démo ↗</a>
-                <a href="https://github.com/setoudie/PromptProjectRepo" target="_blank" rel="noopener">Voir le code ↗</a>
+                <a href="https://prompt-project-navy.vercel.app/" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg>Ouvrir la démo</a>
+                <a href="https://github.com/setoudie/PromptProjectRepo" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>Voir le code</a>
               </div>
             </article>
 
@@ -353,7 +387,7 @@
               </p>
               <p class="project__stack">Python · Elasticsearch · Kibana</p>
               <div class="project__links">
-                <a href="https://github.com/setoudie/ELK_Project" target="_blank" rel="noopener">Voir le code ↗</a>
+                <a href="https://github.com/setoudie/ELK_Project" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>Voir le code</a>
               </div>
             </article>
 
@@ -366,13 +400,13 @@
               </p>
               <p class="project__stack">Django · React · Firebase</p>
               <div class="project__links">
-                <a href="https://github.com/setoudie/celebrity-face-regnition-app" target="_blank" rel="noopener">Voir le code ↗</a>
+                <a href="https://github.com/setoudie/celebrity-face-regnition-app" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>Voir le code</a>
               </div>
             </article>
           </div>
 
           <p class="more-link" data-reveal>
-            <a href="https://github.com/setoudie?tab=repositories" target="_blank" rel="noopener">Voir tous mes dépôts sur GitHub ↗</a>
+            <a href="https://github.com/setoudie?tab=repositories" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>Voir tous mes dépôts sur GitHub</a>
           </p>
         </div>
       </section>
@@ -520,18 +554,20 @@
             Un projet data ou un poste à pourvoir&nbsp;? Écrivez-moi.
           </h2>
           <div class="contact__mail" data-reveal>
-            <a class="contact__address" href="mailto:diedhiousenytoutou@outlook.com">diedhiousenytoutou@outlook.com</a>
+            <a class="btn btn--primary" href="#contact" data-open-contact><svg class="icon" aria-hidden="true"><use href="#i-send"/></svg>Écrire un message</a>
+            <a class="contact__address" href="mailto:diedhiousenytoutou@outlook.com"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg>diedhiousenytoutou@outlook.com</a>
             <button class="btn btn--ghost" type="button" id="copy-mail" data-mail="diedhiousenytoutou@outlook.com">
-              Copier l'adresse
+              <svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>Copier l'adresse
             </button>
           </div>
           <ul class="contact__links" data-reveal>
-            <li><a href="https://www.linkedin.com/in/seny-toutou-diedhiou" target="_blank" rel="noopener">LinkedIn ↗</a></li>
-            <li><a href="https://github.com/setoudie" target="_blank" rel="noopener">GitHub ↗</a></li>
-            <li><a href="https://x.com/senytoutou" target="_blank" rel="noopener">X ↗</a></li>
-            <li><a href="https://www.instagram.com/setoudie/" target="_blank" rel="noopener">Instagram ↗</a></li>
-            <li><a href="tel:+221775878934">+221 77 587 89 34</a></li>
-            <li><a href="assets/Seny_Toutou_Diedhiou_CV.pdf" download>Télécharger mon CV (PDF)</a></li>
+            <li><a href="https://www.linkedin.com/in/seny-toutou-diedhiou" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-linkedin"/></svg>LinkedIn</a></li>
+            <li><a href="https://github.com/setoudie" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>GitHub</a></li>
+            <li><a href="https://x.com/senytoutou" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>X</a></li>
+            <li><a href="https://www.instagram.com/setoudie/" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-instagram"/></svg>Instagram</a></li>
+            <li><a href="https://wa.me/221775878934" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-whatsapp"/></svg>WhatsApp</a></li>
+            <li><a href="tel:+221775878934"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>+221 77 587 89 34</a></li>
+            <li><a href="assets/Seny_Toutou_Diedhiou_CV.pdf" download><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Télécharger mon CV (PDF)</a></li>
           </ul>
         </div>
       </section>
@@ -541,10 +577,48 @@
       <div class="wrap footer__inner">
         <p>© <span id="year">2026</span> Seny Toutou Diedhiou · Dakar</p>
         <p>
-          <a href="https://github.com/setoudie/setoudie.github.io" target="_blank" rel="noopener">Code source du site ↗</a>
+          <a href="https://github.com/setoudie/setoudie.github.io" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>Code source du site</a>
         </p>
       </div>
     </footer>
+
+    <dialog class="dialog" id="contact-dialog" aria-labelledby="dialog-title">
+      <form class="dialog__inner" id="contact-form" novalidate>
+        <div class="dialog__head">
+          <div>
+            <h2 class="dialog__title" id="dialog-title">Écrivez-moi</h2>
+            <p class="dialog__sub">
+              Le message m'arrive directement par e-mail, et WhatsApp s'ouvre avec le même texte : il
+              suffit d'y appuyer sur Envoyer.
+            </p>
+          </div>
+          <button class="icon-btn dialog__close" type="button" data-close aria-label="Fermer la fenêtre">×</button>
+        </div>
+
+        <div class="field">
+          <label for="cf-name">Votre nom</label>
+          <input id="cf-name" name="name" type="text" autocomplete="name" required maxlength="120" />
+        </div>
+        <div class="field">
+          <label for="cf-email">Votre e-mail</label>
+          <input id="cf-email" name="email" type="email" autocomplete="email" required maxlength="200" />
+        </div>
+        <div class="field">
+          <label for="cf-message">Votre message</label>
+          <textarea id="cf-message" name="message" required maxlength="4000"></textarea>
+        </div>
+        <div class="field__hp" aria-hidden="true">
+          <label for="cf-honey">Ne pas remplir</label>
+          <input id="cf-honey" name="_honey" type="text" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <div class="dialog__actions">
+          <button class="btn btn--primary" type="submit" id="cf-submit"><svg class="icon" aria-hidden="true"><use href="#i-send"/></svg>Envoyer</button>
+          <button class="btn btn--ghost" type="button" data-close>Annuler</button>
+        </div>
+        <p class="dialog__status" id="cf-status" role="status" aria-live="polite"></p>
+      </form>
+    </dialog>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
