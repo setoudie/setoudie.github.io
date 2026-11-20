@@ -1,19 +1,19 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "1f70fc9d2530b309eabea54ce63f3015",
+    "revision": "f28478738873c1aea40907b172237a70",
     "url": "/index.html"
   },
   {
-    "revision": "001e39b99fb7eaf6cf99",
-    "url": "/static/css/main.d5d48138.chunk.css"
+    "revision": "67e868c22a98a6168998",
+    "url": "/static/css/main.5649c0eb.chunk.css"
   },
   {
-    "revision": "9eecc7d19fbc6f724d6e",
-    "url": "/static/js/2.9b7143b7.chunk.js"
+    "revision": "375eae638c11c9f0883d",
+    "url": "/static/js/2.d0ced59b.chunk.js"
   },
   {
-    "revision": "001e39b99fb7eaf6cf99",
-    "url": "/static/js/main.793a0b03.chunk.js"
+    "revision": "67e868c22a98a6168998",
+    "url": "/static/js/main.304668d2.chunk.js"
   },
   {
     "revision": "42ac5946195a7306e2a5",
@@ -46,10 +46,6 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
     "revision": "b5c77a6aed75cdad9489effd0d5ea411",
     "url": "/static/media/GoogleSans-Regular.b5c77a6a.ttf"
-  },
-  {
-    "revision": "f4a042525977a0f8a5c40bc6a64da5f4",
-    "url": "/static/media/Logo-OSS.f4a04252.png"
   },
   {
     "revision": "ee6539921d713482b8ccd4d0d23961bb",
