@@ -4,6 +4,8 @@
  *   dans l'ordre exact de l'exploration de l'algorithme (parcours en largeur).
  * - Le curseur montre le rayon eps et le nombre de voisins.
  * - Un clic ajoute des points ; le curseur "eps" relance le calcul.
+ * - Chaque chargement (et "Réinitialiser") tire une nouvelle carte : nombre de quartiers,
+ *   de points et de bruit aléatoires, donc un nombre de clusters différent (2 à 7).
  */
 (() => {
   "use strict";
@@ -62,7 +64,11 @@
   const haloLayer = document.createElement("canvas");
   const hctx = haloLayer.getContext("2d");
 
-  /* ---------- Hasard reproductible ---------- */
+  /* ---------- Hasard : nouvelle graine à chaque chargement et à chaque "Réinitialiser" ---------- */
+  // La graine reste la même pendant un redimensionnement, pour que la carte ne saute pas.
+  const newSeed = () => (Math.random() * 4294967296) >>> 0;
+  let seed = newSeed();
+
   function mulberry32(seed) {
     let a = seed >>> 0;
     return () => {
@@ -117,14 +123,20 @@
 
   /* ---------- Génération des points ---------- */
   function generate() {
-    const rand = mulberry32(221775); // indicatif du Sénégal, pour le clin d'œil
+    const rand = mulberry32(seed);
     const r = clusterRegion();
     const rw = r.x1 - r.x0;
     const rh = r.y1 - r.y0;
     const area = rw * rh;
-    const nClustered = Math.round(Math.min(560, Math.max(150, area / 620)));
-    const k = Math.round(Math.min(7, Math.max(3, area / 55000)));
-    const sigma = Math.max(14, Math.sqrt(area / k) / 7.5);
+    // Nombre de quartiers tiré au hasard, borné par la place disponible
+    const kMax = Math.round(Math.min(7, Math.max(3, area / 40000)));
+    const k = 2 + Math.floor(rand() * (kMax - 1)); // entre 2 et kMax
+    // Nombre de points tiré au hasard autour de la densité de référence (×0.55 à ×1.45)
+    const nBase = area / 620;
+    const nClustered = Math.round(Math.min(640, Math.max(110, nBase * (0.55 + rand() * 0.9))));
+    // Moins de points => quartiers plus serrés, pour qu'ils ne se cassent pas en miettes
+    const density = Math.sqrt(nClustered / Math.max(1, nBase));
+    const sigma = Math.max(14, (Math.sqrt(area / k) / (6.5 + rand() * 2)) * Math.min(1.1, density));
     const out = [];
 
     const clampPt = (x, y) => ({
@@ -144,7 +156,8 @@
     }
 
     // Une "route" : cluster allongé, que DBSCAN sait reconnaître
-    const roadShare = 0.14;
+    // Pas toujours de route : une fois sur trois, la carte n'en a pas
+    const roadShare = rand() < 0.33 ? 0 : 0.1 + rand() * 0.08;
     const nRoad = Math.round(nClustered * roadShare);
     const a = { x: r.x0 + rw * 0.05, y: r.y0 + rh * (0.75 + rand() * 0.2) };
     const b = { x: r.x0 + rw * (0.55 + rand() * 0.35), y: r.y0 + rh * (0.55 + rand() * 0.25) };
@@ -161,14 +174,16 @@
     const weights = centers.map(() => 0.5 + rand());
     const wsum = weights.reduce((s, w) => s + w, 0);
     centers.forEach((c, i) => {
-      const n = Math.round(((nClustered - nRoad) * weights[i]) / wsum);
-      const sx = sigma * (0.7 + rand() * 0.6);
-      const sy = sigma * (0.7 + rand() * 0.6);
+      const n = Math.max(30, Math.round(((nClustered - nRoad) * weights[i]) / wsum));
+      // Étalement plafonné pour que le cœur du quartier reste assez dense pour DBSCAN
+      const sMax = 24 * Math.sqrt(n / 25);
+      const sx = Math.min(sMax, sigma * (0.7 + rand() * 0.6));
+      const sy = Math.min(sMax, sigma * (0.7 + rand() * 0.6));
       for (let j = 0; j < n; j++) out.push(clampPt(c.x + gauss(rand) * sx, c.y + gauss(rand) * sy));
     });
 
     // Bruit : points isolés sur toute la carte
-    const nNoise = Math.round(Math.min(70, Math.max(24, (W * H) / 18000)));
+    const nNoise = Math.round(Math.min(90, Math.max(16, ((W * H) / 18000) * (0.5 + rand()))));
     const free = (x, y) => r.keepOut.every((k) => x < k.x0 || x > k.x1 || y < k.y0 || y > k.y1);
     for (let i = 0, tries = 0; i < nNoise && tries < nNoise * 20; tries++) {
       const x = 6 + rand() * (W - 12);
@@ -460,6 +475,22 @@
     if (!frame) frame = requestAnimationFrame(render);
   }
 
+  /* ---------- Nouvelle carte : on garde un tirage qui donne entre 2 et 7 clusters ---------- */
+  function freshMap() {
+    const epsRef = Number(slider.defaultValue) || 24;
+    const firstSeed = seed;
+    let first = null;
+    for (let tries = 0; tries < 12; tries++) {
+      const candidate = generate();
+      const k = dbscan(candidate, epsRef).k;
+      if (k >= 2 && k <= PALETTE.length) return candidate;
+      if (!first) first = candidate;
+      seed = newSeed();
+    }
+    seed = firstSeed; // aucun tirage dans la plage : on garde le premier
+    return first;
+  }
+
   /* ---------- Calcul + affichage du résultat ---------- */
   function compute() {
     result = dbscan(pts, eps);
@@ -485,7 +516,8 @@
     haloLayer.width = W * dpr;
     haloLayer.height = H * dpr;
     drawGrid();
-    pts = generate();
+    // Premier affichage : nouveau tirage. Redimensionnement : même graine, carte recalée.
+    pts = first ? freshMap() : generate();
     compute();
     schedule(first && !reduceMotion);
     t0 = performance.now();
@@ -533,7 +565,8 @@
     slider.value = "24";
     eps = 24;
     epsOut.textContent = "24 px";
-    pts = generate();
+    seed = newSeed();
+    pts = freshMap();
     compute();
     schedule(!reduceMotion);
     t0 = performance.now();
