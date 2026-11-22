@@ -4,6 +4,42 @@
   const CONTACT_EMAIL = "diedhiousenytoutou@outlook.com";
   const WHATSAPP_NUMBER = "221775878934";
 
+  /* ---------- Statistiques : un seul point d'entrée pour les événements ---------- */
+  // Pour changer d'outil (Umami, Plausible…), il suffit de modifier cette fonction.
+  const track = (name) => {
+    try {
+      if (window.goatcounter && typeof window.goatcounter.count === "function") {
+        window.goatcounter.count({ path: name, title: name, event: true });
+      }
+    } catch (e) {
+      /* les statistiques ne doivent jamais casser le site */
+    }
+  };
+
+  // Clics sur les liens : CV, e-mail, téléphone, réseaux
+  const SOCIAL = { "linkedin.com": "linkedin", "github.com": "github", "x.com": "x", "instagram.com": "instagram", "wa.me": "whatsapp-lien" };
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest && e.target.closest("a[href]");
+    if (!a) return;
+    // Où se trouvait le lien : menu, pied de page ou section (accueil, projets, contact…)
+    const section = a.closest("section[id]:not(.skill)");
+    const where = a.closest(".nav")
+      ? "menu"
+      : a.closest(".footer")
+        ? "pied"
+        : section
+          ? (section.id === "top" ? "accueil" : section.id)
+          : "page";
+    const href = a.getAttribute("href");
+    if (a.hasAttribute("download") || /\.pdf$/i.test(href)) return track(`cv-${where}`);
+    if (href.startsWith("mailto:")) return track(`mail-lien-${where}`);
+    if (href.startsWith("tel:")) return track("telephone");
+    if (a.hostname && a.hostname !== location.hostname) {
+      const host = a.hostname.replace(/^www\./, "");
+      track(`reseau-${SOCIAL[host] || host}-${where}`);
+    }
+  });
+
   const root = document.documentElement;
   const nav = document.getElementById("nav");
   const toggle = nav.querySelector(".nav__toggle");
@@ -106,6 +142,7 @@
     try {
       await navigator.clipboard.writeText(copyBtn.dataset.mail);
       showToast("Adresse copiée");
+      track("mail-copie");
     } catch {
       showToast("Copie impossible : sélectionnez l'adresse à la main");
     }
@@ -175,7 +212,10 @@
   };
 
   dialog.querySelectorAll("[data-channel]").forEach((b) =>
-    b.addEventListener("click", () => showWrite(b.dataset.channel))
+    b.addEventListener("click", () => {
+      showWrite(b.dataset.channel);
+      track(`contact-choix-${b.dataset.channel}`);
+    })
   );
   document.getElementById("cf-back").addEventListener("click", () => {
     showChoose();
@@ -189,6 +229,7 @@
       closeMenu();
       showChoose();
       dialog.showModal();
+      track("contact-ouvert");
       dialog.querySelector("[data-channel]").focus();
     });
   });
@@ -220,6 +261,7 @@
       const waText = `Bonjour Seny, je suis ${name}.\n\n${message}`;
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(waText)}`, "_blank", "noopener");
       setStatus("WhatsApp s'est ouvert avec votre message : appuyez sur Envoyer pour me l'adresser.", "ok");
+      track("contact-whatsapp-ouvert");
       return;
     }
 
@@ -250,6 +292,7 @@
 
       form.reset();
       setStatus("E-mail envoyé. Je vous réponds vite.", "ok");
+      track("contact-mail-envoye");
     } catch (err) {
       setStatus(
         `L'e-mail n'est pas parti. Réessayez, ou écrivez-moi directement à ${CONTACT_EMAIL}.`,
