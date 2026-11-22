@@ -700,6 +700,7 @@
     ui.range.hidden = true;
     ui.refresh.hidden = true;
     ui.logout.hidden = true;
+    if (ui.toMobile) ui.toMobile.hidden = true;
     ui.gate.hidden = false;
     const err = $("gate-error");
     err.textContent = message || "";
@@ -713,6 +714,7 @@
     ui.range.hidden = false;
     ui.refresh.hidden = false;
     ui.logout.hidden = false;
+    if (ui.toMobile) ui.toMobile.hidden = false;
     ui.range.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.days) === days)));
   }
 
@@ -784,7 +786,57 @@
     }
   });
 
+  /* ---------- Ouvrir sur mobile : QR code avec la clé dans le #fragment ---------- */
+  // Le fragment (#…) n'est jamais envoyé au serveur ; la page le lit puis l'efface de l'adresse.
+  const qrDialog = $("qr-dialog");
+  const qrBox = $("qr-code");
+  let qrLib = null;
+
+  function loadQrLib() {
+    if (window.qrcode) return Promise.resolve(window.qrcode);
+    if (!qrLib) {
+      qrLib = new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js";
+        s.onload = () => (window.qrcode ? resolve(window.qrcode) : reject(new Error("QR indisponible")));
+        s.onerror = () => {
+          qrLib = null;
+          reject(new Error("QR indisponible"));
+        };
+        document.head.append(s);
+      });
+    }
+    return qrLib;
+  }
+
+  ui.toMobile = $("to-mobile");
+  ui.toMobile.addEventListener("click", async () => {
+    if (!token || typeof qrDialog.showModal !== "function") return;
+    qrBox.textContent = "Génération du QR code…";
+    qrDialog.showModal();
+    try {
+      const qrcode = await loadQrLib();
+      const qr = qrcode(0, "M");
+      qr.addData(`${location.origin}${location.pathname}#cle=${encodeURIComponent(token)}`);
+      qr.make();
+      // SVG produit par la bibliothèque à partir de notre propre adresse
+      qrBox.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+    } catch (e) {
+      qrBox.textContent = "Impossible de générer le QR code (connexion ou bloqueur). Collez la clé à la main sur le téléphone.";
+    }
+  });
+  const closeQr = () => qrDialog.open && qrDialog.close();
+  $("qr-close").addEventListener("click", closeQr);
+  qrDialog.addEventListener("click", (e) => e.target === qrDialog && closeQr());
+  // Le QR ne reste pas dans la page une fois la fenêtre fermée
+  qrDialog.addEventListener("close", () => qrBox.replaceChildren());
+
   /* ---------- Démarrage ---------- */
+  const fromLink = new URLSearchParams(location.hash.slice(1)).get("cle");
+  if (fromLink) {
+    store.set(TOKEN_KEY, fromLink.trim(), true);
+    history.replaceState(null, "", location.pathname + location.search);
+  }
   token = store.get(TOKEN_KEY);
   if (token) {
     showDash();
