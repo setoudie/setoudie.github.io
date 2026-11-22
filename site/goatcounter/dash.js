@@ -67,28 +67,66 @@
   async function request(path, params, attempt = 0) {
     const url = new URL(`${SITE}/api/v0/${path}`);
     Object.entries(params || {}).forEach(([k, v]) => v !== undefined && url.searchParams.set(k, v));
+    // GoatCounter refuse vite les rafales (mesuré : 3 ou 4 appels, puis quelques
+    // secondes de refus). Un refus arrive souvent sans en-têtes CORS, et le navigateur
+    // le présente comme une erreur réseau : on patiente de plus en plus, puis on réessaie.
+    const WAITS = [2000, 3000, 4000, 5000, 6000, 8000];
     let res;
     try {
-      res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } });
+      res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     } catch (e) {
+      if (attempt < WAITS.length) {
+        await sleep(WAITS[attempt]);
+        return request(path, params, attempt + 1);
+      }
       throw new NetError(e.message);
     }
-    if (res.status === 429 && attempt < 3) {
-      await sleep(1100);
+    if ((res.status === 429 || res.status >= 500) && attempt < WAITS.length) {
+      await sleep(WAITS[attempt]);
       return request(path, params, attempt + 1);
     }
     if (res.status === 401 || res.status === 403) throw new AuthError(String(res.status));
-    if (!res.ok) throw new Error(`GoatCounter a répondu ${res.status}`);
+    // 404 : GoatCounter n'a encore rien pour cette période (site tout neuf) → données vides
+    if (res.status === 404 && path.startsWith("stats/")) return {};
+    if (!res.ok) throw new Error(`GoatCounter a répondu ${res.status} sur « ${path} »`);
     return res.json();
   }
 
+  // Une requête à la fois, espacées : chaque appel compte double pour la limite
+  // (le navigateur envoie d'abord une vérification CORS à cause de la clé).
   function api(path, params) {
     const p = queue.then(() => request(path, params));
     queue = p.then(
-      () => sleep(280),
-      () => sleep(280)
+      () => sleep(500),
+      () => sleep(500)
     );
     return p;
+  }
+
+  /* ---------- Mémoire des derniers chiffres (affichage immédiat) ---------- */
+  const cacheKey = (d) => `gc-dash-cache-${d}`;
+  function readCache(d) {
+    try {
+      return JSON.parse(localStorage.getItem(cacheKey(d)) || "null");
+    } catch (e) {
+      return null;
+    }
+  }
+  function writeCache(d, data) {
+    try {
+      localStorage.setItem(cacheKey(d), JSON.stringify({ at: Date.now(), data }));
+    } catch (e) {
+      /* pas de mémoire : on rechargera tout la prochaine fois */
+    }
+  }
+  function clearCache() {
+    [1, 7, 30, 90, 365].forEach((d) => {
+      try {
+        localStorage.removeItem(cacheKey(d));
+      } catch (e) {
+        /* rien à faire */
+      }
+    });
   }
 
   /* ---------- Noms lisibles ---------- */
@@ -146,7 +184,14 @@
     return { group: "other", label: name, where: "" };
   }
 
+  // GoatCounter renvoie un identifiant (phone, tablet…) et parfois un nom vide
   const SIZES = {
+    phone: "Téléphones",
+    largephone: "Grands téléphones",
+    tablet: "Tablettes, petits portables",
+    desktop: "Ordinateurs",
+    desktophd: "Grands écrans",
+    unknown: "Inconnu",
     Phones: "Téléphones",
     "Large phones, small tablets": "Grands téléphones",
     "Tablets and small laptops": "Tablettes, petits portables",
@@ -247,7 +292,7 @@
   };
 
   /* ---------- Série du graphique (pages vues, hors événements) ---------- */
-  function buildSeries(hits, start, end) {
+  function buildSeries(hits, start, end, n = days) {
     const pages = hits.filter((h) => !h.event);
     const evs = hits.filter((h) => h.event);
     const sumBy = (list, fn) => {
@@ -256,7 +301,7 @@
       return map;
     };
 
-    if (days === 1) {
+    if (n === 1) {
       const byHour = (list) =>
         sumBy(list, (map, s) =>
           (s.hourly || []).forEach((v, h) => {
@@ -506,187 +551,227 @@
     box.hidden = !msg;
   }
 
-  async function load() {
-    const run = ++loading;
-    const { start, end, prevStart } = period(days);
-    const range = { start: iso(start), end: iso(end) };
+  /* ---------- Rendu des différentes parties ---------- */
+  const visitorsOf = (t) => Math.max(0, ((t && t.total) || 0) - ((t && t.total_events) || 0));
 
-    $("dash-title").textContent = TITLES[days];
-    $("dash-meta").textContent = "Chargement…";
-    ui.refresh.classList.add("is-loading");
-    showError("");
-    ["actions", "refs", "locations", "sizes", "browsers", "systems", "pages", "events"].forEach((id) =>
-      skeleton($(id), id === "sizes" || id === "browsers" || id === "systems" ? 3 : 4)
+  function eventsOf(hits) {
+    const ev = {};
+    hits.filter((h) => h.event).forEach((h) => (ev[h.path] = (ev[h.path] || 0) + (h.count || 0)));
+    return ev;
+  }
+
+  // Haut de page : chiffres clés, graphique, contact, clics, pages, événements
+  function renderTop(d) {
+    const hits = d.hits;
+    const visitors = visitorsOf(d.total);
+    const ev = eventsOf(hits);
+    const sumWhere = (re) => Object.entries(ev).reduce((s, [k, v]) => (re.test(k) ? s + v : s), 0);
+    const n = d.days;
+
+    $("k-visitors").textContent = fmt(visitors);
+    const series = buildSeries(hits, new Date(d.start), new Date(d.end), n);
+    drawChart(series);
+    const best = series.reduce((a, b) => (b.value > a.value ? b : a), series[0] || { value: 0 });
+    if (n === 1) {
+      $("k-avg-label").textContent = "Heure la plus active";
+      $("k-avg").textContent = best.value ? best.short : "–";
+      $("k-avg-sub").textContent = best.value ? `${fmt(best.value)} visiteur${best.value > 1 ? "s" : ""}` : "";
+    } else {
+      $("k-avg-label").textContent = "Par jour en moyenne";
+      const avg = visitors / n;
+      $("k-avg").textContent = avg >= 10 || avg === 0 ? fmt(avg) : avg.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
+      const weekly = series.length && /^Semaine/.test(series[0].title);
+      $("k-avg-sub").textContent = best.value
+        ? `${weekly ? "Meilleure semaine : du" : "Meilleur jour :"} ${best.short} (${fmt(best.value)})`
+        : "";
+    }
+    const cv = sumWhere(/^cv-/);
+    $("k-cv").textContent = fmt(cv);
+    $("k-cv-sub").textContent = visitors ? `${Math.round((cv / visitors) * 100)} % des visiteurs` : "";
+    const sentMail = ev["contact-mail-envoye"] || 0;
+    const sentWa = ev["contact-whatsapp-ouvert"] || 0;
+    $("k-contact").textContent = fmt(sentMail + sentWa);
+    $("k-contact-sub").textContent = `e-mail ${fmt(sentMail)} · WhatsApp ${fmt(sentWa)}`;
+
+    renderFunnel(ev);
+
+    // Clics regroupés : CV, réseaux, e-mail, téléphone (le contact est dans l'entonnoir)
+    const groups = new Map();
+    Object.entries(ev).forEach(([name, value]) => {
+      const e = describeEvent(name);
+      if (e.group === "contact") return;
+      const g = groups.get(e.label) || { label: e.label, value: 0, where: {} };
+      g.value += value;
+      if (e.where) g.where[e.where] = (g.where[e.where] || 0) + value;
+      groups.set(e.label, g);
+    });
+    const ACCENTS = { "CV téléchargé": "var(--c3)", LinkedIn: "var(--c6)", GitHub: "var(--c4)", Instagram: "var(--c5)" };
+    renderBars(
+      $("actions"),
+      [...groups.values()]
+        .sort((a, b) => b.value - a.value)
+        .map((g) => ({
+          label: g.label,
+          value: g.value,
+          accent: ACCENTS[g.label] || "var(--c2)",
+          sub: Object.entries(g.where)
+            .sort((a, b) => b[1] - a[1])
+            .map(([w, v]) => `${WHERE[w] || w} ${fmt(v)}`)
+            .join(" · "),
+        })),
+      { empty: "Aucun clic suivi sur cette période." }
     );
-    $("funnel").replaceChildren(el("div", "skeleton"), el("div", "skeleton"), el("div", "skeleton"));
 
-    try {
-      // 1. Totaux + pages/événements : de quoi remplir le haut de page
-      const [total, hitsRes] = [await api("stats/total", range), await api("stats/hits", { ...range, limit: 100 })];
-      if (run !== loading) return;
-      const hits = hitsRes.hits || [];
-      const visitors = Math.max(0, (total.total || 0) - (total.total_events || 0));
+    renderBars(
+      $("pages"),
+      hits
+        .filter((h) => !h.event)
+        .sort((a, b) => b.count - a.count)
+        .map((h) => {
+          const isHome = h.path === "/" || h.path === "/index.html";
+          const is404 = /introuvable/i.test(h.title || "");
+          return {
+            label: isHome ? "Accueil" : h.path,
+            title: `${h.path}${h.title ? ` — ${h.title}` : ""}`,
+            chip: is404 ? "404" : "",
+            sub: isHome ? h.path : "",
+            value: h.count || 0,
+            accent: is404 ? "var(--c1)" : "var(--c2)",
+          };
+        }),
+      { empty: "Aucune page vue sur cette période." }
+    );
 
-      const ev = {};
-      hits.filter((h) => h.event).forEach((h) => (ev[h.path] = (ev[h.path] || 0) + (h.count || 0)));
-      const sumWhere = (re) => Object.entries(ev).reduce((s, [k, v]) => (re.test(k) ? s + v : s), 0);
+    renderBars(
+      $("events"),
+      Object.entries(ev)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, value]) => {
+          const e = describeEvent(name);
+          return { label: e.label, sub: e.where ? WHERE[e.where] || e.where : "", chip: name, value, accent: "var(--c3)" };
+        }),
+      { limit: 50, empty: "Aucun événement sur cette période." }
+    );
+  }
 
-      // Chiffres clés
-      $("k-visitors").textContent = fmt(visitors);
-      const series = buildSeries(hits, start, end);
-      drawChart(series);
-      const best = series.reduce((a, b) => (b.value > a.value ? b : a), series[0] || { value: 0 });
-      if (days === 1) {
-        $("k-avg-label").textContent = "Heure la plus active";
-        $("k-avg").textContent = best.value ? best.short : "–";
-        $("k-avg-sub").textContent = best.value ? `${fmt(best.value)} visiteur${best.value > 1 ? "s" : ""}` : "";
-      } else {
-        $("k-avg-label").textContent = "Par jour en moyenne";
-        const avg = visitors / days;
-        $("k-avg").textContent = avg >= 10 || avg === 0 ? fmt(avg) : avg.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
-        const weekly = series.length && /^Semaine/.test(series[0].title);
-        $("k-avg-sub").textContent = best.value
-          ? `${weekly ? "Meilleure semaine : du" : "Meilleur jour :"} ${best.short} (${fmt(best.value)})`
-          : "";
-      }
-      const cv = sumWhere(/^cv-/);
-      $("k-cv").textContent = fmt(cv);
-      $("k-cv-sub").textContent = visitors ? `${Math.round((cv / visitors) * 100)} % des visiteurs` : "";
-      const sentMail = ev["contact-mail-envoye"] || 0;
-      const sentWa = ev["contact-whatsapp-ouvert"] || 0;
-      $("k-contact").textContent = fmt(sentMail + sentWa);
-      $("k-contact-sub").textContent = `e-mail ${fmt(sentMail)} · WhatsApp ${fmt(sentWa)}`;
+  const REF_NAMES = { ig: "Instagram", fb: "Facebook", li: "LinkedIn", wa: "WhatsApp" };
 
-      renderFunnel(ev);
-
-      // Clics regroupés : CV, réseaux, e-mail, téléphone (le contact est dans l'entonnoir)
-      const groups = new Map();
-      Object.entries(ev).forEach(([name, value]) => {
-        const d = describeEvent(name);
-        if (d.group === "contact") return;
-        const g = groups.get(d.label) || { label: d.label, value: 0, where: {} };
-        g.value += value;
-        if (d.where) g.where[d.where] = (g.where[d.where] || 0) + value;
-        groups.set(d.label, g);
-      });
-      const ACCENTS = { "CV téléchargé": "var(--c3)", LinkedIn: "var(--c6)", GitHub: "var(--c4)", Instagram: "var(--c5)" };
-      renderBars(
-        $("actions"),
-        [...groups.values()]
-          .sort((a, b) => b.value - a.value)
-          .map((g) => ({
-            label: g.label,
-            value: g.value,
-            accent: ACCENTS[g.label] || "var(--c2)",
-            sub: Object.entries(g.where)
-              .sort((a, b) => b[1] - a[1])
-              .map(([w, v]) => `${WHERE[w] || w} ${fmt(v)}`)
-              .join(" · "),
-          })),
-        { empty: "Aucun clic suivi sur cette période." }
-      );
-
-      // Pages vues
-      renderBars(
-        $("pages"),
-        hits
-          .filter((h) => !h.event)
-          .sort((a, b) => b.count - a.count)
-          .map((h) => {
-            const isHome = h.path === "/" || h.path === "/index.html";
-            const is404 = /introuvable/i.test(h.title || "");
-            return {
-              label: isHome ? "Accueil" : h.path,
-              title: `${h.path}${h.title ? ` — ${h.title}` : ""}`,
-              chip: is404 ? "404" : "",
-              sub: isHome ? h.path : "",
-              value: h.count || 0,
-              accent: is404 ? "var(--c1)" : "var(--c2)",
-            };
-          }),
-        { empty: "Aucune page vue sur cette période." }
-      );
-
-      // Liste complète des événements
-      renderBars(
-        $("events"),
-        Object.entries(ev)
-          .sort((a, b) => b[1] - a[1])
-          .map(([name, value]) => {
-            const d = describeEvent(name);
-            return { label: d.label, sub: d.where ? WHERE[d.where] || d.where : "", chip: name, value, accent: "var(--c3)" };
-          }),
-        { limit: 50, empty: "Aucun événement sur cette période." }
-      );
-
-      // 2. Comparaison avec la période précédente
-      const prev = await api("stats/total", { start: iso(prevStart), end: iso(start) });
-      if (run !== loading) return;
-      setDelta($("k-visitors-delta"), visitors, Math.max(0, (prev.total || 0) - (prev.total_events || 0)));
-
-      // 3. Provenance et équipement
-      const stats = async (page, limit) => ((await api(`stats/${page}`, { ...range, limit })).stats || []).filter((s) => s.count > 0);
-
-      const refs = await stats("toprefs", 20);
-      if (run !== loading) return;
+  const LISTS = {
+    refs: (rows) =>
       renderBars(
         $("refs"),
-        refs.map((r) => ({
-          label: unknown(r.name) ? "Accès direct ou masqué" : r.name,
+        rows.map((r) => ({
+          label: unknown(r.name) ? "Accès direct ou masqué" : REF_NAMES[r.name] || r.name,
           chip: r.ref_scheme === "c" ? "campagne" : "",
           value: r.count,
           accent: "var(--c4)",
         })),
         { empty: "Pas encore de site référent." }
-      );
-
-      const locs = await stats("locations", 20);
-      if (run !== loading) return;
+      ),
+    locations: (rows) =>
       renderBars(
         $("locations"),
-        locs.map((l) => ({ label: countryName(l), value: l.count, accent: "var(--c6)" })),
+        rows.map((l) => ({ label: countryName(l), value: l.count, accent: "var(--c6)" })),
         { empty: "Pas encore de données." }
-      );
-
-      const sizes = await stats("sizes", 10);
-      if (run !== loading) return;
+      ),
+    sizes: (rows) =>
       renderBars(
         $("sizes"),
-        sizes.map((s) => ({ label: unknown(s.name) ? "Inconnu" : SIZES[s.name] || s.name, value: s.count, accent: "var(--c5)" })),
+        rows.map((s) => ({
+          label: SIZES[s.id] || SIZES[s.name] || (unknown(s.name) ? s.id || "Inconnu" : s.name),
+          value: s.count,
+          accent: "var(--c5)",
+        })),
         { limit: 5, empty: "Pas encore de données." }
-      );
-
-      const browsers = await stats("browsers", 10);
-      if (run !== loading) return;
+      ),
+    browsers: (rows) =>
       renderBars(
         $("browsers"),
-        browsers.map((s) => ({ label: unknown(s.name) ? "Inconnu" : s.name, value: s.count, accent: "var(--c7)" })),
+        rows.map((s) => ({ label: unknown(s.name) ? "Inconnu" : s.name, value: s.count, accent: "var(--c7)" })),
         { limit: 5, empty: "Pas encore de données." }
-      );
-
-      const systems = await stats("systems", 10);
-      if (run !== loading) return;
+      ),
+    systems: (rows) =>
       renderBars(
         $("systems"),
-        systems.map((s) => ({ label: unknown(s.name) ? "Inconnu" : s.name, value: s.count, accent: "var(--c3)" })),
+        rows.map((s) => ({ label: unknown(s.name) ? "Inconnu" : s.name, value: s.count, accent: "var(--c3)" })),
         { limit: 5, empty: "Pas encore de données." }
-      );
+      ),
+  };
 
-      const now = new Date();
-      $("dash-meta").textContent =
-        days === 1
-          ? `Depuis hier ${timeFmt.format(start)} · mis à jour à ${timeFmt.format(now)}`
-          : `Du ${(days >= 90 ? yearFmt : dayFmt).format(start)} au ${(days >= 90 ? yearFmt : dayFmt).format(now)} · mis à jour à ${timeFmt.format(now)}`;
+  function renderPart(key, d) {
+    if ((key === "total" || key === "hits") && d.total && d.hits) renderTop(d);
+    if ((key === "prev" || key === "total") && d.total && d.prev) setDelta($("k-visitors-delta"), visitorsOf(d.total), visitorsOf(d.prev));
+    if (LISTS[key] && d[key]) LISTS[key](d[key]);
+  }
+
+  function renderAll(d) {
+    ["total", "hits", "prev", ...Object.keys(LISTS)].forEach((k) => d[k] && renderPart(k, d));
+  }
+
+  function periodLabel(d, at) {
+    const start = new Date(d.start);
+    const f = d.days >= 90 ? yearFmt : dayFmt;
+    const range = d.days === 1 ? `Depuis hier ${timeFmt.format(start)}` : `Du ${f.format(start)} au ${f.format(at)}`;
+    return `${range} · mis à jour à ${timeFmt.format(at)}`;
+  }
+
+  /* ---------- Chargement : mémoire d'abord, puis GoatCounter partie par partie ---------- */
+  async function load() {
+    const run = ++loading;
+    const n = days;
+    const { start, end, prevStart } = period(n);
+    const range = { start: iso(start), end: iso(end) };
+
+    $("dash-title").textContent = TITLES[n];
+    ui.refresh.classList.add("is-loading");
+    showError("");
+
+    const cached = readCache(n);
+    if (cached && cached.data && cached.data.total && cached.data.hits) {
+      renderAll(cached.data);
+      $("dash-meta").textContent = `Chiffres de ${timeFmt.format(new Date(cached.at))} · mise à jour en cours…`;
+    } else {
+      $("dash-meta").textContent = "Chargement…";
+      ["actions", "refs", "locations", "sizes", "browsers", "systems", "pages", "events"].forEach((id) =>
+        skeleton($(id), id === "sizes" || id === "browsers" || id === "systems" ? 3 : 4)
+      );
+      $("funnel").replaceChildren(el("div", "skeleton"), el("div", "skeleton"), el("div", "skeleton"));
+      ["k-visitors", "k-avg", "k-cv", "k-contact"].forEach((id) => ($(id).textContent = "–"));
+    }
+
+    const stats = async (page, limit) => ((await api(`stats/${page}`, { ...range, limit })).stats || []).filter((s) => s.count > 0);
+    // Ordre : le plus utile d'abord
+    const steps = [
+      ["total", () => api("stats/total", range)],
+      ["hits", async () => (await api("stats/hits", { ...range, limit: 100 })).hits || []],
+      ["refs", () => stats("toprefs", 20)],
+      ["locations", () => stats("locations", 20)],
+      ["prev", () => api("stats/total", { start: iso(prevStart), end: iso(start) })],
+      ["sizes", () => stats("sizes", 10)],
+      ["browsers", () => stats("browsers", 10)],
+      ["systems", () => stats("systems", 10)],
+    ];
+    const fresh = { days: n, start: range.start, end: range.end };
+
+    try {
+      for (const [key, get] of steps) {
+        const value = await get();
+        if (run !== loading) return;
+        fresh[key] = value;
+        renderPart(key, fresh);
+      }
+      writeCache(n, fresh);
+      $("dash-meta").textContent = periodLabel(fresh, new Date());
     } catch (err) {
       if (run !== loading) return;
       if (err instanceof AuthError) {
         logout("Cette clé a été refusée par GoatCounter (révoquée, ou sans la permission « Read statistics »).");
         return;
       }
-      $("dash-meta").textContent = "Données incomplètes";
+      $("dash-meta").textContent = cached ? `Chiffres de ${timeFmt.format(new Date(cached.at))}` : "Données incomplètes";
       showError(
         err instanceof NetError
-          ? "Impossible de joindre GoatCounter. Si un bloqueur de pub est actif, autorisez cette page (il bloque goatcounter.com), puis actualisez."
+          ? "GoatCounter ne répond pas pour le moment (trop de requêtes, réseau, ou bloqueur de pub qui bloque goatcounter.com). Réessayez dans une minute avec le bouton Actualiser."
           : `Erreur pendant le chargement : ${err.message}`
       );
     } finally {
@@ -722,6 +807,7 @@
     loading++;
     token = "";
     store.remove(TOKEN_KEY);
+    clearCache();
     $("token").value = "";
     showGate(message);
   }
