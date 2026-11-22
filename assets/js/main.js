@@ -17,7 +17,7 @@
   };
 
   // Clics sur les liens : CV, e-mail, téléphone, réseaux
-  const SOCIAL = { "linkedin.com": "linkedin", "github.com": "github", "x.com": "x", "instagram.com": "instagram", "wa.me": "whatsapp-lien" };
+  const SOCIAL = { "linkedin.com": "linkedin", "github.com": "github", "instagram.com": "instagram", "wa.me": "whatsapp-lien" };
   document.addEventListener("click", (e) => {
     const a = e.target.closest && e.target.closest("a[href]");
     if (!a) return;
@@ -166,6 +166,7 @@
   const stepWrite = dialog.querySelector('[data-step="write"]');
   const dialogTitle = document.getElementById("dialog-title");
   const dialogSub = document.getElementById("dialog-sub");
+  const nameField = document.getElementById("cf-name-field");
   const emailField = document.getElementById("cf-email-field");
   const submitLabel = document.getElementById("cf-submit-label");
   const submitIcon = document.getElementById("cf-submit-icon");
@@ -204,11 +205,14 @@
     dialogSub.textContent = c.sub;
     submitLabel.textContent = c.submit;
     submitIcon.setAttribute("href", c.icon);
-    // L'e-mail du visiteur n'est utile que pour la réponse par e-mail
-    emailField.hidden = ch !== "mail";
-    form.elements.email.required = ch === "mail";
+    // Nom et e-mail ne servent qu'à l'e-mail ; sur WhatsApp, seul le message compte
+    const isMail = ch === "mail";
+    nameField.hidden = !isMail;
+    emailField.hidden = !isMail;
+    form.elements.name.required = isMail;
+    form.elements.email.required = isMail;
     setStatus("");
-    form.elements.name.focus();
+    (isMail ? form.elements.name : form.elements.message).focus();
   };
 
   dialog.querySelectorAll("[data-channel]").forEach((b) =>
@@ -250,22 +254,25 @@
     const email = form.elements.email.value.trim();
     const message = form.elements.message.value.trim();
 
-    if (!name || !message) {
-      setStatus("Indiquez votre nom et votre message.", "error");
-      (name ? form.elements.message : form.elements.name).focus();
-      return;
-    }
-
-    // WhatsApp : ouvert dans le clic (sinon le navigateur bloque la fenêtre)
+    // WhatsApp : juste le message, ouvert dans le clic (sinon le navigateur bloque la fenêtre)
     if (channel === "whatsapp") {
-      const waText = `Bonjour Seny, je suis ${name}.\n\n${message}`;
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(waText)}`, "_blank", "noopener");
+      if (!message) {
+        setStatus("Écrivez votre message.", "error");
+        form.elements.message.focus();
+        return;
+      }
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank", "noopener");
       setStatus("WhatsApp s'est ouvert avec votre message : appuyez sur Envoyer pour me l'adresser.", "ok");
       track("contact-whatsapp-ouvert");
       return;
     }
 
     // E-mail : envoyé directement
+    if (!name || !message) {
+      setStatus("Indiquez votre nom et votre message.", "error");
+      (name ? form.elements.message : form.elements.name).focus();
+      return;
+    }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setStatus("Indiquez une adresse e-mail valide pour que je puisse vous répondre.", "error");
       form.elements.email.focus();
