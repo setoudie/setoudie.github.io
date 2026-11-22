@@ -606,6 +606,65 @@
   margin-left: 0.4rem;
 }
 
+/* ---------- QR code vers le téléphone ---------- */
+.qr-dialog {
+  width: min(100% - 2rem, 380px);
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.qr-dialog::backdrop {
+  background: rgb(10 8 18 / 0.6);
+  backdrop-filter: blur(3px);
+}
+
+.qr-dialog__inner {
+  padding: 1.25rem 1.35rem 1.4rem;
+}
+
+.qr-dialog__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.qr-dialog__title {
+  font: 600 1.15rem/1.2 var(--f-display);
+}
+
+.qr-dialog__lead {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin-bottom: 1rem;
+}
+
+.qr-dialog__code {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: 14px;
+  border-radius: var(--r);
+  background: #fff; /* fond blanc : indispensable pour la lecture du QR */
+  color: #555;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.qr-dialog__code svg {
+  width: 100%;
+  height: auto;
+}
+
+.qr-dialog__warn {
+  margin-top: 0.9rem;
+  font: 400 0.72rem/1.5 var(--f-mono);
+  color: var(--c3);
+}
+
 /* ---------- Petits écrans ---------- */
 @media (max-width: 900px) {
   .kpis {

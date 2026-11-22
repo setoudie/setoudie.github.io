@@ -1,2 +1,7 @@
 .DS_Store
 Thumbs.db
+
+# Secrets locaux (clé API GoatCounter…) : jamais sur GitHub
+.env
+.env.*
+!.env.example
