@@ -280,6 +280,7 @@
     }
     submitBtn.disabled = true;
     setStatus("Envoi de l'e-mail…");
+    let reached = false; // le service a-t-il répondu ?
     try {
       const res = await fetch(`https://formsubmit.co/ajax/${CONTACT_EMAIL}`, {
         method: "POST",
@@ -294,17 +295,23 @@
           _captcha: "false",
         }),
       });
+      reached = true;
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || String(data.success) !== "true") throw new Error(data.message || res.status);
+      if (!res.ok || String(data.success) !== "true") throw new Error(data.message || `HTTP ${res.status}`);
 
       form.reset();
       setStatus("E-mail envoyé. Je vous réponds vite.", "ok");
       track("contact-mail-envoye");
     } catch (err) {
-      setStatus(
-        `L'e-mail n'est pas parti. Réessayez, ou écrivez-moi directement à ${CONTACT_EMAIL}.`,
-        "error"
-      );
+      // Détail technique pour le propriétaire du site (console du navigateur)
+      console.warn("[contact] envoi e-mail refusé :", err.message);
+      track("contact-mail-echec");
+      const why = !reached
+        ? "Votre navigateur n'a pas pu joindre le service d'envoi (connexion ou bloqueur de pub)."
+        : /activ/i.test(err.message)
+          ? "L'envoi par e-mail n'est pas encore activé de mon côté."
+          : "Le service d'envoi a refusé le message.";
+      setStatus(`${why} Écrivez-moi directement à ${CONTACT_EMAIL}, ou passez par WhatsApp.`, "error");
     } finally {
       submitBtn.disabled = false;
     }

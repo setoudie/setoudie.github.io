@@ -167,6 +167,7 @@
       "contact-choix-whatsapp": ["contact", "A choisi WhatsApp"],
       "contact-mail-envoye": ["contact", "E-mail envoyé"],
       "contact-whatsapp-ouvert": ["contact", "Message WhatsApp préparé"],
+      "contact-mail-echec": ["mail", "Échec d'envoi d'e-mail"],
       "mail-copie": ["mail", "Adresse e-mail copiée"],
       telephone: ["phone", "Numéro de téléphone cliqué"],
     };
