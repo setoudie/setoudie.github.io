@@ -132,6 +132,24 @@
   background: var(--bg-2);
 }
 
+/* Version épurée : juste le champ, la case et le bouton */
+.gate__card--min {
+  width: min(100%, 380px);
+  padding: 1.5rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .gate__title {
   font: 600 var(--step-3) / 1.05 var(--f-display);
   margin-bottom: 0.9rem;
