@@ -16,7 +16,7 @@
       href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap"
     />
     <link rel="stylesheet" href="../assets/css/style.css" />
-    <link rel="stylesheet" href="dash.css?v=3" />
+    <link rel="stylesheet" href="dash.css?v=4" />
     <script>
       (function () {
         var theme = "dark";
@@ -70,24 +70,11 @@
     <main class="dash-wrap">
       <!-- Connexion : la clé API reste dans ce navigateur -->
       <section class="gate" id="gate" hidden>
-        <form class="gate__card" id="gate-form" autocomplete="off">
-          <p class="eyebrow">Accès privé</p>
-          <h1 class="gate__title">Vos statistiques</h1>
-          <p class="gate__lead">
-            Collez une clé API GoatCounter en lecture seule. Elle reste dans ce navigateur et n'est envoyée qu'à GoatCounter.
-          </p>
-          <ol class="gate__steps">
-            <li>
-              Ouvrez
-              <a href="https://setoudie.goatcounter.com/user/api" target="_blank" rel="noopener">setoudie.goatcounter.com › API</a>
-              et cliquez sur <b>New API token</b>.
-            </li>
-            <li>Cochez uniquement <b>Read statistics</b>, puis créez la clé.</li>
-            <li>Copiez-la et collez-la ci-dessous.</li>
-          </ol>
+        <form class="gate__card gate__card--min" id="gate-form" autocomplete="off">
+          <h1 class="visually-hidden">Statistiques</h1>
           <div class="field">
-            <label for="token">Clé API</label>
-            <input id="token" name="token" type="password" spellcheck="false" required />
+            <label for="token" class="visually-hidden">Clé API</label>
+            <input id="token" name="token" type="password" spellcheck="false" placeholder="Clé API" required />
           </div>
           <label class="check">
             <input type="checkbox" id="remember" checked />
